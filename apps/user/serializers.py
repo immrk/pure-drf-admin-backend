@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     dept_name = serializers.SerializerMethodField()
     role_name = serializers.SerializerMethodField()
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), many=True, required=False, default=list)
+    last_login = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
 
     class Meta:
         model = User

@@ -51,6 +51,9 @@ class LoginView(APIView):
                 if user.status == 0:
                     return CustomResponse(success=False, msg="用户已被禁用", status=status.HTTP_401_UNAUTHORIZED)
                 current_time = timezone.now()
+                # 手动更新 last_login 字段
+                user.last_login = current_time
+                user.save(update_fields=['last_login'])
                 # 生成token
                 refresh = RefreshToken.for_user(user)
                 access_token = refresh.access_token
