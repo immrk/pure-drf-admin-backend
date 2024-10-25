@@ -1,0 +1,20 @@
+[tool.black]
+line-length = 400
+skip-string-normalization = false
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+    \.git
+    | \.vscode
+    | \.venv
+    | configs\/
+    | docker\/
+    | docs\/
+  )/
+)
+'''
+
+[tool.isort]
+profile = 'black'
