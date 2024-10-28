@@ -42,4 +42,4 @@ class RedisView(APIView):
             value = cache.get("my_key")
         except:
             value = "获取缓存失败"
-        return CustomResponse(success=True, data={"data": value}, msg="redis测试成功")
+        return CustomResponse(success=True, data=value, msg="redis测试成功")
