@@ -6,7 +6,6 @@ logs
 *.pot
 *.py[cod]
 __pycache__
-.env
 .venv
 #项目日志和上传资源目录
 /logs/
