@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from utils.decorators import require_permission
 from utils.permissions import ActiveAndPermission
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.core.cache import cache
 
 
 # Create your views here.
@@ -26,3 +27,19 @@ class PermissionView2(APIView):
 
     def get(self, request, *args, **kwargs):
         return CustomResponse(success=True, data=None, msg="权限测试成功")
+
+
+class RedisView(APIView):
+    """
+    用于测试redis缓存
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # 设置缓存值
+            cache.set("my_key", "Hello, Redis!", timeout=60)  # 设置缓存 60 秒
+            # 获取缓存值
+            value = cache.get("my_key")
+        except:
+            value = "获取缓存失败"
+        return CustomResponse(success=True, data={"data": value}, msg="redis测试成功")

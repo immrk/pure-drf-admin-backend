@@ -170,3 +170,14 @@ CORS_ALLOW_HEADERS = "*"
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:5173",
 # ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': env.str('REDIS_HOST'),  # 指定 Redis 服务器地址和数据库编号
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            # 'PASSWORD': env.str('REDIS_PASSWORD', default=''),
+        }
+    }
+}
