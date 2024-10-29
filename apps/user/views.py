@@ -17,6 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import UserFilter
 from utils.viewset import CustomModelViewSet
 from utils.decorators import require_permission
+from django.contrib.auth.signals import user_logged_in
 
 User = get_user_model()
 
@@ -51,9 +52,8 @@ class LoginView(APIView):
                 if user.status == 0:
                     return CustomResponse(success=False, msg="用户已被禁用", status=status.HTTP_401_UNAUTHORIZED)
                 current_time = timezone.now()
-                # 手动更新 last_login 字段
-                user.last_login = current_time
-                user.save(update_fields=['last_login'])
+                # 发送登录信号
+                user_logged_in.send(sender=user.__class__, request=request, user=user)
                 # 生成token
                 refresh = RefreshToken.for_user(user)
                 access_token = refresh.access_token
