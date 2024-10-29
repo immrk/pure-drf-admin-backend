@@ -72,3 +72,18 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         # 如果没有找到匹配的权限，返回 False
         return False
+    
+    # 定义一个获取当前用户所有权限的方法
+    def get_all_permissions(self):
+        # 定义一个空列表，用于存放当前用户的所有权限
+        permission_list = []
+        # 遍历当前用户的所有角色
+        for role in self.role.filter(status=True):
+            # 获取当前角色关联的权限菜单
+            permissions = role.menu.filter(menu_type=Menu.MenuChoices.PERMISSION, status=True).values_list("code", flat=True)
+            # 将当前角色的权限添加到 permission_list 中
+            permission_list.extend(permissions)
+        # 去重
+        permission_list = list(set(permission_list))
+        # 返回当前用户的所有权限
+        return permission_list
