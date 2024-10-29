@@ -6,7 +6,6 @@ logs
 *.pot
 *.py[cod]
 __pycache__
-.env
 .venv
 #项目日志和上传资源目录
 /logs/
@@ -14,3 +13,7 @@ __pycache__
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+.DS_Store
+
+# 环境变量文件，开发时使用，生成部署时改为环境变量
+# .env

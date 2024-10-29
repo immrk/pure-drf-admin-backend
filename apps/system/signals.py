@@ -1,12 +1,23 @@
-# signals.py
-
-from django.db.models.signals import pre_delete
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from .models import Role
+from django.core.cache import cache
+from django.conf import settings
+from .models import Menu
 
+def update_permissions_cache():
+    """更新 Redis 中的权限数据"""
+    if settings.USE_REDIS:
+        print("更新 Redis 中的权限数据")
+        permissions = Menu.objects.filter(menu_type=Menu.MenuChoices.PERMISSION, status=True).values_list("code", flat=True)
+        permissions = list(permissions)
+        cache.set("all_permissions", permissions, timeout=settings.CACHES_TTL)
 
-@receiver(pre_delete, sender=Role)
-def delete_role_user_relationship(sender, instance, **kwargs):
-    # 清除与被删除角色相关的所有用户关联
-    for user in instance.user_set.all():  # 访问与 Role 相关联的所有 User 对象
-        user.role.remove(instance)  # 从每个用户的角色中删除当前的 Role 实例
+@receiver(post_save, sender=Menu)
+def menu_saved(sender, instance, **kwargs):
+    # 当 Menu 表有数据创建或更新时，更新 Redis 缓存
+    update_permissions_cache()
+
+@receiver(post_delete, sender=Menu)
+def menu_deleted(sender, instance, **kwargs):
+    # 当 Menu 表有数据删除时，更新 Redis 缓存
+    update_permissions_cache()
