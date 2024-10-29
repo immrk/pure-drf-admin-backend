@@ -1,8 +1,5 @@
 from django.db import models
 from utils.models import UuidModel, BaseModel
-from rest_framework.utils import encoders
-from django.core.exceptions import ValidationError
-import json
 
 
 class Role(UuidModel, BaseModel):
