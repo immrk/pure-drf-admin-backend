@@ -18,6 +18,7 @@ from .filters import UserFilter
 from utils.viewset import CustomModelViewSet
 from utils.decorators import require_permission
 from django.contrib.auth.signals import user_logged_in
+from .signals import user_login_failed
 
 User = get_user_model()
 
@@ -65,5 +66,7 @@ class LoginView(APIView):
                 data = {"avatar": userdata["avatar"], "username": userdata["username"], "nickname": userdata["nickname"], "roles": userdata["role"], "refreshToken": str(refresh), "accessToken": str(refresh.access_token), "expires": expiration_time_str}
                 return CustomResponse(data=data, msg="登陆成功")
 
+            # 发送登录失败信号
+            user_login_failed.send(sender=user.__class__, request=request, email=email)
             return CustomResponse(success=False, msg="登录信息错误", status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

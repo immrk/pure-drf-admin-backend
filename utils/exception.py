@@ -13,6 +13,10 @@ from rest_framework.views import set_rollback, exception_handler
 from django.http.response import Http404
 from .response import CustomResponse
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def CustomExceptionHandler(ex, context):
     """
@@ -89,8 +93,10 @@ def CustomExceptionHandler(ex, context):
     # for key in errorMsg:
     #     msg = errorMsg[key][0]
     # print(traceback.format_exc())
-    print("异常信息:", msg)
-    return CustomResponse(success=False, data=response.data, msg=msg, status=response.status_code)
+    if response:
+        return CustomResponse(success=False, data=response.data, msg=msg, status=response.status_code)
+    else:
+        return CustomResponse(success=False, data={}, msg=msg, status=500)
 
 
 class APIException(Exception):

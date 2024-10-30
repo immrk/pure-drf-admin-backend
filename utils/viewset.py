@@ -50,9 +50,16 @@ class CustomModelViewSet(ModelViewSet):
         return CustomResponse(success=True, data=serializer.data, msg="成功更新")
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return CustomResponse(success=True, data=None, msg="成功删除", status=status.HTTP_200_OK)
+        if isinstance(request.data, list):
+            # 处理批量删除
+            for pk in request.data:
+                instance = self.get_object(pk)
+                self.perform_destroy(instance)
+            return CustomResponse(success=True, data=None, msg="成功批量删除", status=status.HTTP_200_OK)
+        else:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return CustomResponse(success=True, data=None, msg="成功删除", status=status.HTTP_200_OK)
 
     def handle_exception(self, exc):
         """
