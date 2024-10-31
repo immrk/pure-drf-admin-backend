@@ -93,10 +93,11 @@ def CustomExceptionHandler(ex, context):
     # for key in errorMsg:
     #     msg = errorMsg[key][0]
     # print(traceback.format_exc())
-    if response:
-        return CustomResponse(success=False, data=response.data, msg=msg, status=response.status_code)
-    else:
-        return CustomResponse(success=False, data={}, msg=msg, status=500)
+    # if response:
+    #     return CustomResponse(success=False, data=response.data, msg=msg, status=response.status_code)
+    # else:
+    #     return CustomResponse(success=False, data={}, msg=msg, status=500)
+    return CustomResponse(success=False, data=response.data, msg=msg, status=response.status_code)
 
 
 class APIException(Exception):

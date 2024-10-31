@@ -52,7 +52,7 @@ class ApiLoggingMiddleware(MiddlewareMixin):
             'request_os': get_os(request),
             'request_browser': get_browser(request),
             'request_msg': request.session.get('request_msg'),
-            'status': True if response else False,
+            'status': response.data.get('success', False) if isinstance(response.data, dict) else False,
             'json_result': response.data if response.data else {},
         }
         temp_request_modular = ""
