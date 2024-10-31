@@ -30,14 +30,19 @@ macos：
 
 `./redis-server ../redis.conf`；
 
-## 1.3 初始化数据库
+## 1.3 初始化数据库与数据
 
-使用已有的迁移文件进行迁移即可
+### 1.3.1 SQLite数据库
 
-`python manage.py migrate`
+1. 在.env文件中设置`DB_ENGINE`为`sqlite3`, 切换至sqlite数据库引擎
+2. 使用已有的迁移文件进行迁移即可`python manage.py migrate`
+3. 注意：由于sqllite在删除数据后并不会释放空间，会导致数据文件不断增大，故需要不定时使用`VACUUM指令，释放占用空间，避免文件过大
 
-由于sqllite在删除数据后并不会释放空间，会导致数据文件不断增大，故需要不定时使用
+### 1.3.2 Mysql数据库
 
-`VACUUM`
+1. 在.env文件中设置`DB_ENGINE`为`mysql`, 切换至mysql数据库引擎, 并设置好数据库参数
+2. 使用已有的迁移文件进行迁移即可`python manage.py migrate`
+3. 将sqlite内数据作为初始化数据导入mysql数据库
 
-指令，释放占用空间，避免文件过大
+   1. 将初始数据生成为json数据 `python manage.py dumpdata > data.json`
+   2. 将初始数据导入mysql数据库`python manage.py loaddata ./data.json` 注意：若设置了redis缓存，则需要启动redis服务，否则将报错

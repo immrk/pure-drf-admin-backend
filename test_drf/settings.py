@@ -97,6 +97,29 @@ DATABASES = {
     }
 }
 
+# 配置数据库
+print(env.str('DB_ENGINE'))
+if env.str('DB_ENGINE') == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env.str('DB_NAME'),
+            'USER': env.str('DB_USER'),
+            'PASSWORD': env.str('DB_PASSWORD'),
+            'HOST': env.str('DB_HOST', default='localhost'),
+            'PORT': env.str('DB_PORT', default='3306'),
+        }
+    }
+elif env.str('DB_ENGINE') == 'sqlite3':
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    raise ValueError("Unsupported database engine in .env file")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
