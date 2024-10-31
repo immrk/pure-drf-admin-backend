@@ -29,3 +29,9 @@ macos：
 前往安装路径
 
 `./redis-server ../redis.conf`；
+
+## 1.3 初始化数据库
+
+使用已有的迁移文件进行迁移即可
+
+`python manage.py migrate`
