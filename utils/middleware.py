@@ -4,6 +4,8 @@ from utils.request_util import get_request_user, get_request_ip, get_request_dat
 import json
 from django.contrib.auth.models import AnonymousUser, User
 from apps.monitor.models import OperationLog
+from uuid import UUID
+
 
 
 class ApiLoggingMiddleware(MiddlewareMixin):
@@ -47,13 +49,13 @@ class ApiLoggingMiddleware(MiddlewareMixin):
             'creator': user if not isinstance(user, AnonymousUser) else None,
             'request_method': request.method,
             'request_path': request.request_path,
-            'request_body': body,
+            'request_body': self.prepare_json_data(body),
             'response_code': response.status_code,
             'request_os': get_os(request),
             'request_browser': get_browser(request),
             'request_msg': request.session.get('request_msg'),
             'status': response.data.get('success', False) if isinstance(response.data, dict) else False,
-            'json_result': response.data if response.data else {},
+            'json_result': self.prepare_json_data(response.data) if response.data else {},
         }
         temp_request_modular = ""
         if not self.request_modular and settings.API_MODEL_MAP.get(request.request_path, None):
@@ -75,7 +77,21 @@ class ApiLoggingMiddleware(MiddlewareMixin):
     def process_request(self, request):
         self.__handle_request(request)
 
+    def prepare_json_data(self, data):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if isinstance(value, UUID):
+                    data[key] = str(value)  # 将 UUID 转换为字符串
+                elif isinstance(value, dict):
+                    self.prepare_json_data(value)  # 递归处理嵌套字典
+                elif isinstance(value, list):
+                    for i in range(len(value)):
+                        if isinstance(value[i], UUID):
+                            value[i] = str(value[i])  # 将 UUID 转换为字符串
+                        elif isinstance(value[i], dict):
+                            self.prepare_json_data(value[i])  # 递归处理嵌套字典
 
+        return data
 
     def process_response(self, request, response):
         """
