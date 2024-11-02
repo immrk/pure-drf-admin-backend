@@ -53,7 +53,7 @@ class Menu(UuidModel, BaseModel):
         super().delete(using, keep_parents)
 
     class Meta:
-        verbose_name = "菜单/权限"
+        verbose_name = "菜单/权限表"
         verbose_name_plural = verbose_name
         ordering = ("create_time",)
 
@@ -99,7 +99,7 @@ class DeptInfo(UuidModel, BaseModel):
     status = models.BooleanField(verbose_name=("Is active"), default=True)
 
     class Meta:
-        verbose_name = "部门"
+        verbose_name = "部门表"
         verbose_name_plural = verbose_name
         ordering = (
             "rank",

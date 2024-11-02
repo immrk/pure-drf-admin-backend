@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import environ
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +32,7 @@ SECRET_KEY = env.str("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost"])
 
 
 # Application definition
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "apps.user",
     "apps.system",
     "apps.functiontest",
+    "apps.monitor",
 ]
 
 MIDDLEWARE = [
@@ -61,6 +63,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "utils.middleware.ApiLoggingMiddleware",  # 自定义日志中间件
 ]
 
 ROOT_URLCONF = "test_drf.urls"
@@ -84,15 +87,32 @@ TEMPLATES = [
 WSGI_APPLICATION = "test_drf.wsgi.application"
 
 
-# Database
+# ================================================= #
+# ********************** 数据库 ******************** #
+# ================================================= #
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# 配置数据库
+print(env.str('DB_ENGINE'))
+if env.str('DB_ENGINE') == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env.str('DB_NAME'),
+            'USER': env.str('DB_USER'),
+            'PASSWORD': env.str('DB_PASSWORD'),
+            'HOST': env.str('DB_HOST', default='localhost'),
+            'PORT': env.str('DB_PORT', default='3306'),
+        }
     }
-}
+elif env.str('DB_ENGINE') == 'sqlite3':
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    raise ValueError("Unsupported database engine in .env file")
 
 
 # Password validation
@@ -163,6 +183,9 @@ SIMPLE_JWT = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+# ================================================= #
+# ********************* 跨域设置 ******************* #
+# ================================================= #
 # 允许跨域
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
@@ -171,7 +194,9 @@ CORS_ALLOW_HEADERS = "*"
 #     "http://localhost:5173",
 # ]
 
-# 缓存设置
+# ================================================= #
+# ****************** Redis缓存设置 ***************** #
+# ================================================= #
 USE_REDIS = env.bool("USE_REDIS", default=False)
 CACHES = {
     "default": {
@@ -185,3 +210,134 @@ CACHES = {
 }
 
 CACHES_TTL = 60 * 60 * 1  # 缓存时间
+
+# ================================================= #
+# ********************* 日志设置 ******************* #
+# ================================================= #
+API_LOG_ENABLE = env.bool("API_LOG_ENABLE", default=False)
+API_LOG_METHODS = env.list("API_LOG_METHODS", default=["GET", "POST", "PUT", "DELETE"])
+# 日志记录显示的请求模块中文名映射
+API_MODEL_MAP = {
+    "/api/user/login/": "登录模块",
+    "/api/system/asyncroutes/": "动态路由模块",
+}
+# log 配置部分BEGIN #
+system_version = sys.platform.lower()
+if 'linux' in system_version:
+    LOG_BASE_PATH = '/data'
+    SERVER_LOGS_FILE = os.path.join(LOG_BASE_PATH, 'logs', 'server.log')
+    ERROR_LOGS_FILE = os.path.join(LOG_BASE_PATH, 'logs', 'error.log')
+    if not os.path.exists(os.path.join(LOG_BASE_PATH, 'logs')):
+        try:
+            os.makedirs(os.path.join(LOG_BASE_PATH, 'logs'))
+        except FileExistsError:
+            pass  # Directory already exists
+else:
+    SERVER_LOGS_FILE = os.path.join(BASE_DIR, 'logs', 'server.log')
+    ERROR_LOGS_FILE = os.path.join(BASE_DIR, 'logs', 'error.log')
+    if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
+        try:
+            os.makedirs(os.path.join(BASE_DIR, 'logs'))
+        except FileExistsError:
+            pass
+
+# 格式:[2023-12-28 20:45:03][basehttp.py:187:log_message] [INFO] 这是一条日志:
+# 格式:[日期][文件名:行号:函数] [级别] 信息
+STANDARD_LOG_FORMAT = '[%(asctime)s][%(filename)s:%(lineno)d:%(funcName)s] [%(levelname)s] %(message)s'
+
+def skip_health_check_requests(record):
+    # 过滤 GET / HTTP 的请求
+    try:
+        return not record.args[0].startswith('GET / HTTP')
+    except Exception:
+        return True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'skip_health_check_requests': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': skip_health_check_requests,
+        },
+    },
+    'formatters': {
+        'standard': {
+            'format': "{levelname} {asctime} {pathname} - line {lineno}: {message}",
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            "style": "{",
+        },
+        'console': {
+            'format': "{levelname} {asctime} {pathname} - line {lineno}: {message}",
+            "style": "{",
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'file': {
+            'format': "{levelname} {asctime} {pathname} - line {lineno}: {message}",
+            "style": "{",
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        # 以json格式呈现日志, 日志的显示格式是自定义的, 通过JSONFormatter类指定
+        # "json_ensure_ascii": False 可以将中文正常显示
+        "json": {
+            "()": "utils.logsFormat.JSONFormatter",
+            "json_ensure_ascii": False
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': SERVER_LOGS_FILE,
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 10,  # 最多备份10个
+            'formatter': 'json',
+            'encoding': 'utf-8',
+        },
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ERROR_LOGS_FILE,
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 10,  # 最多备份10个
+            'formatter': 'json',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+            'filters': ['skip_health_check_requests'],
+        }
+    },
+    'loggers': {
+        # default日志
+        '': {
+            'handlers': ['console', 'error', 'file'],
+            'level': 'INFO',
+        },
+        'django': {
+            'handlers': ['console', 'error', 'file'],
+            'level': 'INFO',
+            "propagate": False,# 不向上级 logger 传播
+        },
+        'scripts': {
+            'handlers': ['console', 'error', 'file'],
+            'level': 'INFO',
+        },
+        # 数据库相关日志
+        'django.db.backends': {
+            'handlers': ["console", "error", "file"],
+            'propagate': False,
+            'level': 'INFO',
+        },
+        "uvicorn.error": {
+            "level": "INFO",
+            "handlers": ["console", "error", "file"],
+        },
+        "uvicorn.access": {
+            "handlers": ["console", "error", "file"],
+            "level": "INFO"
+        },
+    }
+}

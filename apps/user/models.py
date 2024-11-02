@@ -49,6 +49,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"  # 用于登录的字段
     REQUIRED_FIELDS = ["username"]  # 创建超级用户时必须输入的字段
+    
+    class Meta:
+        verbose_name = "用户表"
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return self.username
