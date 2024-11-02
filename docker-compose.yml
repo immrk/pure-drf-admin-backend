@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   api:
-    image: pure-drf-api  # 假设镜像名称为 drf-app
+    image: immrk/pure-drf-api:0.0.1  # 镜像名称 hub路径/镜像名称:版本号(tag)
     build: .
     ports:
       - "8000:8000"

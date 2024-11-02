@@ -32,7 +32,7 @@ SECRET_KEY = env.str("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost"])
 
 
 # Application definition
@@ -87,16 +87,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "test_drf.wsgi.application"
 
 
-# Database
+# ================================================= #
+# ********************** 数据库 ******************** #
+# ================================================= #
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
 # 配置数据库
 print(env.str('DB_ENGINE'))
 if env.str('DB_ENGINE') == 'mysql':
@@ -234,12 +228,18 @@ if 'linux' in system_version:
     SERVER_LOGS_FILE = os.path.join(LOG_BASE_PATH, 'logs', 'server.log')
     ERROR_LOGS_FILE = os.path.join(LOG_BASE_PATH, 'logs', 'error.log')
     if not os.path.exists(os.path.join(LOG_BASE_PATH, 'logs')):
-        os.makedirs(os.path.join(LOG_BASE_PATH, 'logs'))
+        try:
+            os.makedirs(os.path.join(LOG_BASE_PATH, 'logs'))
+        except FileExistsError:
+            pass  # Directory already exists
 else:
     SERVER_LOGS_FILE = os.path.join(BASE_DIR, 'logs', 'server.log')
     ERROR_LOGS_FILE = os.path.join(BASE_DIR, 'logs', 'error.log')
     if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
-        os.makedirs(os.path.join(BASE_DIR, 'logs'))
+        try:
+            os.makedirs(os.path.join(BASE_DIR, 'logs'))
+        except FileExistsError:
+            pass
 
 # 格式:[2023-12-28 20:45:03][basehttp.py:187:log_message] [INFO] 这是一条日志:
 # 格式:[日期][文件名:行号:函数] [级别] 信息
