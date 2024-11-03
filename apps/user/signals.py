@@ -19,8 +19,8 @@ def user_logged_in_handler(sender, request, user, **kwargs):
         # 获取用户权限并存入缓存
         permissions = user.get_all_permissions()
         cache.set(f"user_permissions_{user.id}", permissions, timeout=settings.CACHES_TTL)
-        # 保存登录日志
-        save_login_log(request, user.username, status=True)
+    # 保存登录日志
+    save_login_log(request, user.username, status=True)
 
 
 @receiver(user_login_failed)
