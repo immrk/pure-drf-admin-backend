@@ -1,0 +1,29 @@
+name: Deploy DRF Application
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 构建 Docker 镜像
+      - name: Build Docker image
+        run: docker-compose build
+
+      # 检查镜像是否能成功启动一个容器
+      - name: Run Docker container to check status
+        run: docker-compose up -d
+
+      # 登录 Docker Hub
+      - name: Docker login
+        run: echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+
+      # 推送镜像到 Docker Hub
+      - name: Push Docker image to Docker Hub
+        run: docker push immrk/pure-drf-api:latest

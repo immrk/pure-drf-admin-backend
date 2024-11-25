@@ -1,6 +1,6 @@
 services:
   api:
-    image: immrk/pure-drf-api:0.0.1  # 镜像名称 hub路径/镜像名称:版本号(tag)
+    image: immrk/pure-drf-api:latest  # 镜像名称 hub路径/镜像名称:版本号(tag)
     build: .
     ports:
       - "8000:8000"
