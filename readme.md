@@ -1,6 +1,15 @@
 # drf for prue-admin-thin(puredrf)
 
-技术框架：python 3.12.1 // django // drf // sqlite // redis // docker
+## 标准化的DRF(django-restful-framework)RBAC后端项目 为Pure Admin前端开源框架构建
+
+## 该后端项目完全适配于前端项目[immrk/pure-admin-thin](https://github.com/immrk/pure-admin-thin)；该前端项目为[pure admin(thin)](https://github.com/pure-admin/pure-admin-thin)官方项目的fork项目并同步更新，并针对drf后端特性与RBAC需求进行了适配性修改
+
+* 语言环境: python 3.12.1
+* 技术框架：django(drf)
+* 数据库:  sqlite | mysql
+* 缓存数据：redis(option可选项)
+* 部署方法：docker
+* 自动部署：git actions
 
 ## 1.项目初始化
 
