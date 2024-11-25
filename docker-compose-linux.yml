@@ -1,0 +1,25 @@
+services:
+  api:
+    image: immrk/pure-drf-api:0.0.1  # 镜像名称 hub路径/镜像名称:版本号(tag)
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/apps/puredrf/logs:/logs:/app/logs        # 映射 logs 目录
+      - /home/apps/puredrf/.env:/app/.env         # 映射 .env 文件
+      - /home/apps/puredrf/db.sqlite3:/app/db.sqlite3  # 映射数据库文件
+      - /home/apps/puredrf/gunicorn.conf.py:/app/gunicorn.conf.py  # 映射 Gunicorn 配置文件
+  redis:
+    image: redis
+    container_name: myredis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /home/apps/redis/redis.conf:/etc/redis/redis.conf # 映射配置文件
+      - /home/apps/redis/data:/data # 映射数据持久化目录
+    command: ["redis-server", "/etc/redis/redis.conf", "--appendonly", "yes"]
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "2"
