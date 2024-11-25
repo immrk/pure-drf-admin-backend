@@ -11,6 +11,12 @@ jobs:
       # 检出代码
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      # 安装 docker-compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
       # 构建 Docker 镜像
       - name: Build Docker image
