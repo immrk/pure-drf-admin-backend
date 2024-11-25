@@ -28,7 +28,7 @@ jobs:
 
       # 登录 Docker Hub
       - name: Docker login
-        run: echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ vars.DOCKER_HUB_PASSWORD }} --password-stdin
 
       # 推送镜像到 Docker Hub
       - name: Push Docker image to Docker Hub
