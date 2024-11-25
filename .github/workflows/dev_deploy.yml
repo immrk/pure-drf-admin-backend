@@ -3,6 +3,8 @@ name: Deploy DRF Application
 on:
   push:
     branches: [dev]
+  paths-ignore:
+      - 'readme.md'
 
 jobs:
   build_and_deploy:
@@ -51,3 +53,8 @@ jobs:
       - name: Push Docker image to Docker Hub
         if: success()
         run: docker push immrk/pure-drf-api:latest
+      
+      # 更新开发环境镜像并重启容器
+      - name: Deploy to remote server
+        if: success()
+        run: sshpass -p ${{ secrets.HOST_USER_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ vars.HOST_USER_NAME }}@${{ vars.HOST}} "cd ${{ vars.COMPOSE_FILE_PATH }} && docker-compose pull && docker-compose down && docker-compose up -d"
