@@ -2,8 +2,9 @@ name: Deploy DRF Application
 
 on:
   push:
-    branches: [dev]
-  paths-ignore:
+    branches: 
+      - dev
+    paths-ignore:
       - 'readme.md'
 
 jobs:
