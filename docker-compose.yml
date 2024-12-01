@@ -1,0 +1,11 @@
+services:
+  api:
+    image: immrk/pure-drf-api:latest  # 镜像名称 hub路径/镜像名称:版本号(tag)
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs        # 映射 logs 目录
+      - ./.env:/app/.env         # 映射 .env 文件
+      - ./db.sqlite3:/app/db.sqlite3  # 映射数据库文件
+      - ./gunicorn.conf.py:/app/gunicorn.conf.py  # 映射 Gunicorn 配置文件

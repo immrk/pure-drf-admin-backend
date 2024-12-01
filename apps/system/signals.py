@@ -7,7 +7,6 @@ from .models import Menu
 def update_permissions_cache():
     """更新 Redis 中的权限数据"""
     if settings.USE_REDIS:
-        print("更新 Redis 中的权限数据")
         permissions = Menu.objects.filter(menu_type=Menu.MenuChoices.PERMISSION, status=True).values_list("code", flat=True)
         permissions = list(permissions)
         cache.set("all_permissions", permissions, timeout=settings.CACHES_TTL)
