@@ -13,4 +13,4 @@ RUN apt-get update && apt-get install -y \
 
 COPY . .
 
-CMD ["gunicorn", "-c", "/app/gunicorn.conf.py", "test_drf.wsgi"]
+CMD ["gunicorn", "-c", "/app/gunicorn.conf.py", "puredrf.wsgi"]
