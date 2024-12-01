@@ -32,13 +32,15 @@ def get_request_user(request):
 def get_request_ip(request):
     """
     获取请求IP
-    :param request:
-    :return:
+    :param request: Django request 对象
+    :return: 客户端真实 IP 地址
     """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[-1].strip()
+        # 获取第一个非空的 IP
+        ip = x_forwarded_for.split(',')[0].strip()
         return ip
+    # 如果 X-Forwarded-For 为空，则使用 REMOTE_ADDR
     ip = request.META.get('REMOTE_ADDR', '') or getattr(request, 'request_ip', None)
     return ip or 'unknown'
 
