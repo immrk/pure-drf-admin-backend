@@ -47,10 +47,11 @@ class ActiveAndPermission(BasePermission):
             raise PermissionDenied("用户未激活")
         # 获取请求路径, 并进行处理
         path = request.path
-        # 如果请求的路径最后一部分是uuid，则去掉uuid部分
+        # 如果请求的路径最后一部分是uuid或者数字，则去掉最后一部分(patch和put请求)
         uuid_pattern = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+        number_pattern = re.compile(r"^\d+$")
         path_parts = path.rstrip("/").split("/")
-        if uuid_pattern.match(path_parts[-1]):
+        if uuid_pattern.match(path_parts[-1]) or number_pattern.match(path_parts[-1]):
             if path_parts:
                 path = "/".join(path_parts[:-1]) + "/"
             else:
