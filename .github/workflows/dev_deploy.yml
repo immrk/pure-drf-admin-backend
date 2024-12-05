@@ -23,11 +23,11 @@ jobs:
 
       # 构建 Docker 镜像
       - name: Build Docker image
-        run: docker-compose build
+        run: docker-compose -f docker-compose-dev.yml build
 
       # 检查镜像是否能成功启动一个容器
       - name: Run Docker container
-        run: docker-compose up -d
+        run: docker-compose -f docker-compose-dev.yml up -d
       
       # 检查容器状态
       - name: Check container status
@@ -45,15 +45,10 @@ jobs:
           fi
           echo "Container is running successfully."
 
-      # 登录 Docker Hub
-      - name: Docker login
+      # 推送镜像到 kworlds's Docker Hub
+      - name: Push Docker image to Kworlds's Docker Hub
         if: success()
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ vars.DOCKER_HUB_USERNAME }}" --password-stdin
-
-      # 推送镜像到 Docker Hub
-      - name: Push Docker image to Docker Hub
-        if: success()
-        run: docker push immrk/pure-drf-api:latest
+        run: docker push dockerhub.kworlds.cn/pure-drf-api:dev
       
       # 更新开发环境镜像并重启容器
       - name: Deploy to remote server
