@@ -33,7 +33,7 @@ jobs:
       - name: Check container status
         id: container_status
         run: |
-          CONTAINER_NAME=$(docker-compose ps -q | head -n 1)
+          CONTAINER_NAME=$(docker-compose -f docker-compose-dev.yml ps -q | head -n 1)
           if [ -z "$CONTAINER_NAME" ]; then
             echo "No containers found, failing the step."
             exit 1
