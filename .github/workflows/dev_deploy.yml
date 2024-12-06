@@ -50,6 +50,10 @@ jobs:
           fi
           echo "Container is running successfully."
 
+      # 登录到 kworlds's Docker Hub
+      - name: Login to Kworlds's Docker Hub
+        run: docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+
       # 推送镜像到 kworlds's Docker Hub
       - name: Push Docker image to Kworlds's Docker Hub
         if: success()
