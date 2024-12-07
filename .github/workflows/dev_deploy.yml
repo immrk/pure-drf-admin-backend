@@ -63,8 +63,8 @@ jobs:
         if: success()
         run: docker push dockerhub.kworlds.cn/pure-drf-api:${{ env.IMAGE_TAG }}
       
-      # 获取dev标签旧镜像
-      - name: Delete old dev tag from Docker Hub
+      # 获取dev标签旧镜像的digest
+      - name: Get old dev tag digest from Docker Hub
         run: |
           OLD_DIGEST=$(curl -sI -u ${{ vars.DOCKER_HUB_USERNAME }}:${{ secrets.DOCKER_HUB_PASSWORD }} \
             -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
@@ -78,11 +78,11 @@ jobs:
           docker tag dockerhub.kworlds.cn/pure-drf-api:${{ env.IMAGE_TAG }} dockerhub.kworlds.cn/pure-drf-api:dev
           docker push dockerhub.kworlds.cn/pure-drf-api:dev
       
-      # 删除旧dev镜像
-      - name: Delete old dev tag from Docker Hub
+      # 删除旧dev镜像manifest
+      - name: Delete old dev tag manifest from Docker Hub
         if: success()
         run: |
-          f [ -n "$OLD_DIGEST" ]; then
+          if [ -n "$OLD_DIGEST" ]; then
             curl -X DELETE -u ${{ vars.DOCKER_HUB_USERNAME }}:${{ secrets.DOCKER_HUB_PASSWORD }} \
               https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/$OLD_DIGEST
           else
