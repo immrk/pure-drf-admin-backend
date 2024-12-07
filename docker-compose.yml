@@ -1,7 +1,8 @@
 services:
   api:
-    image: dockerhub.kworlds.cn/pure-drf-api:latest  # 镜像名称 hub路径/镜像名称:版本号(tag)
-    build: .
+    image: dockerhub.kworlds.cn/pure-drf-api:${IMAGE_TAG}  # 使用环境变量 IMAGE_TAG
+    build:
+      context: .
     ports:
       - "8000:8000"
     volumes:
@@ -9,3 +10,5 @@ services:
       - ./.env:/app/.env         # 映射 .env 文件
       - ./db.sqlite3:/app/db.sqlite3  # 映射数据库文件
       - ./gunicorn.conf.py:/app/gunicorn.conf.py  # 映射 Gunicorn 配置文件
+    environment:
+      IMAGE_TAG: "${IMAGE_TAG}"  # 显式传递 IMAGE_TAG 环境变量
