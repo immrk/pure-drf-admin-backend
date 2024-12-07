@@ -101,5 +101,5 @@ jobs:
             docker-compose pull
             docker-compose down
             docker-compose up -d
-            docker exec -it dockerhub registry garbage-collect /etc/docker/registry/config.yml
+            docker exec dockerhub registry garbage-collect /etc/docker/registry/config.yml
           EOF
