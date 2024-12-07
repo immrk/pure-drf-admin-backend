@@ -42,7 +42,7 @@ jobs:
       - name: Check container status
         id: container_status
         run: |
-          CONTAINER_NAME=$(IMAGE_TAG=${{ env.IMAGE_TAG }} docker-compose -f docker-compose-prod.yml ps -q | head -n 1)
+          CONTAINER_NAME=$(IMAGE_TAG=${{ env.IMAGE_TAG }} docker-compose -f docker-compose.yml ps -q | head -n 1)
           if [ -z "$CONTAINER_NAME" ]; then
             echo "No containers found, failing the step."
             exit 1
