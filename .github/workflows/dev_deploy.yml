@@ -70,6 +70,7 @@ jobs:
             -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
             https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/dev | \
             awk -F': ' '/^[Dd]ocker-[Cc]ontent-[Dd]igest:/ {gsub(/\r/, "", $2); print $2}')
+          echo "OLD_DIGEST=$OLD_DIGEST" >> $GITHUB_ENV
       
       # 将新镜像标签修改为dev并推送
       - name: Tag and push new image with dev tag
@@ -82,9 +83,9 @@ jobs:
       - name: Delete old dev tag manifest from Docker Hub
         if: success()
         run: |
-          if [ -n "$OLD_DIGEST" ]; then
+          if [ -n ${{ env.OLD_DIGEST }} ]; then
             curl -X DELETE -u ${{ vars.DOCKER_HUB_USERNAME }}:${{ secrets.DOCKER_HUB_PASSWORD }} \
-              https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/$OLD_DIGEST
+              https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/${{ env.OLD_DIGEST }}
           else
             echo "No old digest found to delete."
             exit 1
