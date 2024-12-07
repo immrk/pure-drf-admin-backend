@@ -26,19 +26,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
+      # 生成时间戳镜像标签
+      - name: Generate image tag
+        run: echo "IMAGE_TAG=latest-$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
       # 构建 Docker 镜像
       - name: Build Docker image
-        run: docker-compose -f docker-compose-prod.yml build
+        run: IMAGE_TAG=${{ env.IMAGE_TAG }} docker-compose -f docker-compose.yml build
 
       # 检查镜像是否能成功启动一个容器
       - name: Run Docker container
-        run: docker-compose -f docker-compose-prod.yml up -d
+        run: IMAGE_TAG=${{ env.IMAGE_TAG }} docker-compose -f docker-compose.yml up -d
       
       # 检查容器状态
       - name: Check container status
         id: container_status
         run: |
-          CONTAINER_NAME=$(docker-compose -f docker-compose-prod.yml ps -q | head -n 1)
+          CONTAINER_NAME=$(IMAGE_TAG=${{ env.IMAGE_TAG }} docker-compose -f docker-compose-prod.yml ps -q | head -n 1)
           if [ -z "$CONTAINER_NAME" ]; then
             echo "No containers found, failing the step."
             exit 1
@@ -57,8 +61,36 @@ jobs:
       # 推送镜像到 kworlds's Docker Hub
       - name: Push Docker image to Kworlds's Docker Hub
         if: success()
-        run: docker push dockerhub.kworlds.cn/pure-drf-api:latest
+        run: docker push dockerhub.kworlds.cn/pure-drf-api:${{ env.IMAGE_TAG }}
       
+      # 获取latest标签旧镜像的digest
+      - name: Get old latest tag digest from Docker Hub
+        run: |
+          OLD_DIGEST=$(curl -sI -u ${{ vars.DOCKER_HUB_USERNAME }}:${{ secrets.DOCKER_HUB_PASSWORD }} \
+            -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/latest | \
+            awk -F': ' '/^[Dd]ocker-[Cc]ontent-[Dd]igest:/ {gsub(/\r/, "", $2); print $2}')
+          echo "OLD_DIGEST=$OLD_DIGEST" >> $GITHUB_ENV
+
+      # 将新镜像标签修改为latest并推送
+      - name: Tag and push new image with latest tag
+        if: success()
+        run: |
+          docker tag dockerhub.kworlds.cn/pure-drf-api:${{ env.IMAGE_TAG }} dockerhub.kworlds.cn/pure-drf-api:latest
+          docker push dockerhub.kworlds.cn/pure-drf-api:latest
+
+      # 删除旧latest镜像manifest
+      - name: Delete old latest tag manifest from Docker Hub
+        if: success()
+        run: |
+          if [ -n ${{ env.OLD_DIGEST }} ]; then
+            curl -X DELETE -u ${{ vars.DOCKER_HUB_USERNAME }}:${{ secrets.DOCKER_HUB_PASSWORD }} \
+              https://dockerhub.kworlds.cn/v2/pure-drf-api/manifests/${{ env.OLD_DIGEST }}
+          else
+            echo "No old digest found to delete."
+            exit 1
+          fi
+
       # 更新开发环境镜像并重启容器
       - name: Deploy to remote server
         if: success()
@@ -69,4 +101,12 @@ jobs:
             docker-compose pull
             docker-compose down
             docker-compose up -d
+          EOF
+      
+      # 清理香港hub服务器垃圾镜像
+      - name: Clean up Docker Hub registry
+        if: success()
+        run: |
+          sshpass -p "${{ secrets.HOST_USER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ vars.HOST_USER_NAME }}@${{ vars.HOST }} << EOF
+            docker exec dockerhub registry garbage-collect /etc/docker/registry/config.yml
           EOF
