@@ -1,16 +1,16 @@
 name: Deploy DRF Application
 
-on: workflow_dispatch
-  # push:
-  #   branches: 
-  #     - main
-  #   paths-ignore:
-  #     - 'readme.md'
-  # pull_request:
-  #   branches:
-  #     - main
-  #   paths-ignore:
-  #     - 'readme.md'
+on:
+  push:
+    branches: 
+      - main
+    paths-ignore:
+      - 'readme.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'readme.md'
 
 jobs:
   build_and_deploy:
