@@ -11,6 +11,7 @@ on:
       - dev
     paths-ignore:
       - 'readme.md'
+      - 'script'
 
 jobs:
   build_and_deploy:
