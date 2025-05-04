@@ -15,5 +15,8 @@ pip-log.txt
 pip-delete-this-directory.txt
 .DS_Store
 
+# 数据库文件
+db.sqlite3
+
 # 环境变量文件，开发时使用，生成部署时改为环境变量
 .env
