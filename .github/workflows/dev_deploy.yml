@@ -6,11 +6,6 @@ on:
       - dev
     paths-ignore:
       - 'readme.md'
-  pull_request:
-    branches:
-      - dev
-    paths-ignore:
-      - 'readme.md'
       - 'script'
 
 jobs:
